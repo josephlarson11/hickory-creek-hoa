@@ -34,23 +34,27 @@ export type BoardMember = {
 export const boardMembers: BoardMember[] = [
   {
     position: "President",
-    name: "To be added"
+    name: "Michelle Eguia"
   },
   {
     position: "Vice President",
-    name: "To be added"
+    name: "Mariusz Tatara"
   },
   {
     position: "Treasurer",
-    name: "To be added"
+    name: "Mike Gomez"
   },
   {
     position: "Secretary",
-    name: "To be added"
+    name: "Joe Larson"
   },
   {
     position: "Director",
-    name: "To be added"
+    name: "Barb Kemper"
+  },
+  {
+    position: "Director",
+    name: "Matt Creager"
   }
 ];
 
