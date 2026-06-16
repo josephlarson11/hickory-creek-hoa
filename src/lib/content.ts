@@ -26,6 +26,34 @@ export type CalendarEvent = {
   type: "Board Meeting" | "Annual Meeting" | "Community Event";
 };
 
+export type BoardMember = {
+  position: string;
+  name: string;
+};
+
+export const boardMembers: BoardMember[] = [
+  {
+    position: "President",
+    name: "To be added"
+  },
+  {
+    position: "Vice President",
+    name: "To be added"
+  },
+  {
+    position: "Treasurer",
+    name: "To be added"
+  },
+  {
+    position: "Secretary",
+    name: "To be added"
+  },
+  {
+    position: "Director",
+    name: "To be added"
+  }
+];
+
 export const announcements: Announcement[] = [
   {
     id: "summer-landscaping",

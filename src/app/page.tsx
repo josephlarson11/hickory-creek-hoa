@@ -116,7 +116,7 @@ export default function HomePage() {
               ["Board meeting agenda request", "/resident-requests/board-meeting"],
               ["Annual meeting agenda request", "/resident-requests/annual-meeting"],
               ["Contact the association", "/contact"],
-              ["Board portal", "/board"]
+              ["Board Portal", "/board-portal"]
             ].map(([label, href]) => (
               <Link
                 key={href}

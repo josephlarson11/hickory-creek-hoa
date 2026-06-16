@@ -31,7 +31,7 @@ export function SiteFooter() {
             <Link href="/documents" className="hover:text-white">Public documents</Link>
             <Link href="/calendar" className="hover:text-white">Community calendar</Link>
             <Link href="/resident-requests" className="hover:text-white">Submission forms</Link>
-            <Link href="/board" className="hover:text-white">Board portal</Link>
+            <Link href="/board-portal" className="hover:text-white">Board Portal</Link>
           </div>
         </div>
       </div>

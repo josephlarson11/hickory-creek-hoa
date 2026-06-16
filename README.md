@@ -24,5 +24,6 @@ GoDaddy DNS instructions are in `docs/godaddy-dns-setup.md`.
 ## Board Maintenance Docs
 
 - `docs/firebase-setup.md`
+- `docs/board-content-management.md`
 - `docs/adding-board-members.md`
 - `docs/publishing-approved-minutes.md`

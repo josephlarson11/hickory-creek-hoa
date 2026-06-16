@@ -28,6 +28,16 @@ service cloud.firestore {
       allow write: if isBoardMember();
     }
 
+    match /calendarEvents/{id} {
+      allow read: if resource.data.public == true;
+      allow write: if isBoardMember();
+    }
+
+    match /galleryItems/{id} {
+      allow read: if resource.data.public == true;
+      allow write: if isBoardMember();
+    }
+
     match /residentSubmissions/{id} {
       allow create: if true;
       allow read, update: if isBoardMember();

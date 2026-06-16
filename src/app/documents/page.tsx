@@ -1,24 +1,67 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, Eye, Search } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
-import { documents } from "@/lib/content";
+import { DocumentItem, documents } from "@/lib/content";
 import { formatDate } from "@/lib/format";
-
-const categories = ["All", ...Array.from(new Set(documents.map((item) => item.category)))];
+import { collection, getDocs, query as firestoreQuery, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function DocumentsPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
+  const [liveDocuments, setLiveDocuments] = useState<DocumentItem[]>([]);
+
+  useEffect(() => {
+    async function loadLiveDocuments() {
+      if (!db) {
+        return;
+      }
+
+      const snapshot = await getDocs(firestoreQuery(
+        collection(db, "publicDocuments"),
+        where("approved", "==", true),
+        where("public", "==", true)
+      ));
+
+      setLiveDocuments(snapshot.docs.map((item) => {
+        const data = item.data();
+        return {
+          id: item.id,
+          title: String(data.title ?? ""),
+          category: String(data.category ?? "Policies"),
+          updatedAt: String(data.updatedAtText ?? data.updatedAt ?? new Date().toISOString().slice(0, 10)),
+          description: String(data.description ?? ""),
+          href: String(data.href ?? "#"),
+          isApproved: Boolean(data.approved)
+        };
+      }));
+    }
+
+    loadLiveDocuments().catch(() => setLiveDocuments([]));
+  }, []);
+
+  const allDocuments = useMemo(() => {
+    const staticIds = new Set(liveDocuments.map((item) => item.id));
+    return [
+      ...liveDocuments,
+      ...documents.filter((item) => !staticIds.has(item.id))
+    ];
+  }, [liveDocuments]);
+
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(allDocuments.map((item) => item.category)))],
+    [allDocuments]
+  );
 
   const visible = useMemo(() => {
-    return documents.filter((item) => {
+    return allDocuments.filter((item) => {
       const matchesCategory = category === "All" || item.category === category;
       const matchesQuery = `${item.title} ${item.category} ${item.description}`.toLowerCase().includes(query.toLowerCase());
       return matchesCategory && matchesQuery && item.isApproved;
     });
-  }, [category, query]);
+  }, [allDocuments, category, query]);
 
   return (
     <>
