@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #f7f3ea;
+  color: #333333;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid #2f5d3a;
+  outline-offset: 3px;
+}
+
+@media (prefers-contrast: more) {
+  body {
+    background: #ffffff;
+  }
+
+  .contrast-ring {
+    border-color: #111111 !important;
+  }
+}
+
+@layer components {
+  .section {
+    @apply mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8;
+  }
+
+  .eyebrow {
+    @apply text-sm font-bold uppercase tracking-[0.12em] text-forest;
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded border border-burgundy bg-burgundy px-4 py-2 text-sm font-bold text-white transition hover:bg-[#65322f] focus-visible:outline-forest;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded border border-forest px-4 py-2 text-sm font-bold text-forest transition hover:bg-forest hover:text-white;
+  }
+
+  .field {
+    @apply w-full rounded border border-stone bg-white px-3 py-2 text-ink shadow-sm focus:border-forest focus:ring-forest;
+  }
+
+  .label {
+    @apply text-sm font-bold text-ink;
+  }
+}

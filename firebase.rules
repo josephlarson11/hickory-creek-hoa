@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function boardProfile() {
+      return get(/databases/$(database)/documents/boardUsers/$(request.auth.token.email));
+    }
+
+    function isBoardMember() {
+      return signedIn() && boardProfile().data.active == true;
+    }
+
+    function isAdmin() {
+      return isBoardMember() && boardProfile().data.role in ['President', 'Administrator'];
+    }
+
+    match /publicAnnouncements/{id} {
+      allow read: if resource.data.published == true;
+      allow write: if isBoardMember();
+    }
+
+    match /publicDocuments/{id} {
+      allow read: if resource.data.approved == true && resource.data.public == true;
+      allow write: if isBoardMember();
+    }
+
+    match /residentSubmissions/{id} {
+      allow create: if true;
+      allow read, update: if isBoardMember();
+      allow delete: if isAdmin();
+    }
+
+    match /boardDocuments/{id} {
+      allow read, write: if isBoardMember();
+    }
+
+    match /boardUsers/{email} {
+      allow read: if isBoardMember();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /auditLogs/{id} {
+      allow create: if isBoardMember();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+  }
+}

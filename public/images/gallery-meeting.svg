@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Community meeting">
+  <rect width="800" height="600" fill="#F7F3EA"/>
+  <rect x="80" y="140" width="640" height="320" rx="8" fill="#fff"/>
+  <rect x="130" y="190" width="540" height="18" fill="#D8C3A5"/>
+  <rect x="130" y="240" width="390" height="18" fill="#D8C3A5"/>
+  <rect x="130" y="290" width="470" height="18" fill="#D8C3A5"/>
+  <circle cx="180" cy="420" r="38" fill="#2F5D3A"/>
+  <circle cx="285" cy="420" r="38" fill="#7A3E3A"/>
+  <circle cx="390" cy="420" r="38" fill="#2F5D3A"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Neighborhood entrance">
+  <rect width="800" height="600" fill="#F7F3EA"/>
+  <rect y="410" width="800" height="190" fill="#2F5D3A"/>
+  <circle cx="180" cy="170" r="120" fill="#2F5D3A"/>
+  <circle cx="260" cy="150" r="150" fill="#2F5D3A"/>
+  <rect x="330" y="240" width="320" height="150" rx="8" fill="#D8C3A5"/>
+  <rect x="370" y="270" width="240" height="90" rx="8" fill="#7A3E3A"/>
+  <text x="490" y="325" text-anchor="middle" font-family="Georgia, serif" font-size="44" fill="#F7E4B3">Hickory Creek</text>
+</svg>
