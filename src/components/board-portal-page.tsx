@@ -127,15 +127,15 @@ export default function BoardPortalPage() {
 
     const unsubDocuments = onSnapshot(collection(db, "publicDocuments"), (snapshot) => {
       setManagedDocuments(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
-    });
+    }, (error) => setContentMessage(`Document listings could not load: ${error.message}`));
 
     const unsubEvents = onSnapshot(collection(db, "calendarEvents"), (snapshot) => {
       setManagedEvents(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
-    });
+    }, (error) => setContentMessage(`Calendar events could not load: ${error.message}`));
 
     const unsubGallery = onSnapshot(collection(db, "galleryItems"), (snapshot) => {
       setManagedGallery(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
-    });
+    }, (error) => setContentMessage(`Gallery items could not load: ${error.message}`));
 
     return () => {
       unsubDocuments();
@@ -183,24 +183,28 @@ export default function BoardPortalPage() {
       return;
     }
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    const published = formData.get("published") === "on";
-    const content = String(formData.get("content") ?? "");
+    try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const published = formData.get("published") === "on";
+      const content = String(formData.get("content") ?? "");
 
-    await addDoc(collection(db, "publicAnnouncements"), {
-      title: String(formData.get("title") ?? ""),
-      summary: String(formData.get("summary") || content.slice(0, 150)),
-      content,
-      publishDate: String(formData.get("publishDate") ?? new Date().toISOString().slice(0, 10)),
-      author: profile.displayName || profile.role,
-      published,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
+      await addDoc(collection(db, "publicAnnouncements"), {
+        title: String(formData.get("title") ?? ""),
+        summary: String(formData.get("summary") || content.slice(0, 150)),
+        content,
+        publishDate: String(formData.get("publishDate") ?? new Date().toISOString().slice(0, 10)),
+        author: profile.displayName || profile.role,
+        published,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
 
-    form.reset();
-    setAnnouncementMessage(published ? "Announcement published." : "Announcement saved as a draft.");
+      form.reset();
+      setAnnouncementMessage(published ? "Announcement published." : "Announcement saved as a draft.");
+    } catch (error) {
+      setAnnouncementMessage(error instanceof Error ? error.message : "Announcement could not be saved.");
+    }
   }
 
   async function handleDocumentSubmit(event: FormEvent<HTMLFormElement>) {
@@ -209,21 +213,25 @@ export default function BoardPortalPage() {
       return;
     }
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    await addDoc(collection(db, "publicDocuments"), {
-      title: String(formData.get("title") ?? ""),
-      category: String(formData.get("category") ?? "Policies"),
-      description: String(formData.get("description") ?? ""),
-      href: String(formData.get("href") ?? ""),
-      updatedAtText: String(formData.get("updatedAt") ?? new Date().toISOString().slice(0, 10)),
-      approved: formData.get("approved") === "on",
-      public: formData.get("public") === "on",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    form.reset();
-    setContentMessage("Document listing saved.");
+    try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      await addDoc(collection(db, "publicDocuments"), {
+        title: String(formData.get("title") ?? ""),
+        category: String(formData.get("category") ?? "Policies"),
+        description: String(formData.get("description") ?? ""),
+        href: String(formData.get("href") ?? ""),
+        updatedAtText: String(formData.get("updatedAt") ?? new Date().toISOString().slice(0, 10)),
+        approved: formData.get("approved") === "on",
+        public: formData.get("public") === "on",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      form.reset();
+      setContentMessage("Document listing saved.");
+    } catch (error) {
+      setContentMessage(error instanceof Error ? `Document listing could not be saved: ${error.message}` : "Document listing could not be saved.");
+    }
   }
 
   async function handleEventSubmit(event: FormEvent<HTMLFormElement>) {
@@ -232,20 +240,24 @@ export default function BoardPortalPage() {
       return;
     }
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    await addDoc(collection(db, "calendarEvents"), {
-      title: String(formData.get("title") ?? ""),
-      date: String(formData.get("date") ?? ""),
-      time: String(formData.get("time") ?? ""),
-      location: String(formData.get("location") ?? ""),
-      type: String(formData.get("type") ?? "Community Event"),
-      public: formData.get("public") === "on",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    form.reset();
-    setContentMessage("Calendar event saved.");
+    try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      await addDoc(collection(db, "calendarEvents"), {
+        title: String(formData.get("title") ?? ""),
+        date: String(formData.get("date") ?? ""),
+        time: String(formData.get("time") ?? ""),
+        location: String(formData.get("location") ?? ""),
+        type: String(formData.get("type") ?? "Community Event"),
+        public: formData.get("public") === "on",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      form.reset();
+      setContentMessage("Calendar event saved.");
+    } catch (error) {
+      setContentMessage(error instanceof Error ? `Calendar event could not be saved: ${error.message}` : "Calendar event could not be saved.");
+    }
   }
 
   async function handleGallerySubmit(event: FormEvent<HTMLFormElement>) {
@@ -254,17 +266,21 @@ export default function BoardPortalPage() {
       return;
     }
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    await addDoc(collection(db, "galleryItems"), {
-      title: String(formData.get("title") ?? ""),
-      src: String(formData.get("src") ?? "/images/entrance.jpg"),
-      public: formData.get("public") === "on",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    form.reset();
-    setContentMessage("Gallery item saved.");
+    try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      await addDoc(collection(db, "galleryItems"), {
+        title: String(formData.get("title") ?? ""),
+        src: String(formData.get("src") ?? "/images/entrance.jpg"),
+        public: formData.get("public") === "on",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      form.reset();
+      setContentMessage("Gallery item saved.");
+    } catch (error) {
+      setContentMessage(error instanceof Error ? `Gallery item could not be saved: ${error.message}` : "Gallery item could not be saved.");
+    }
   }
 
   async function hideManagedItem(collectionName: string, id: string) {
@@ -272,10 +288,14 @@ export default function BoardPortalPage() {
       return;
     }
 
-    await updateDoc(doc(db, collectionName, id), {
-      public: false,
-      updatedAt: serverTimestamp()
-    });
+    try {
+      await updateDoc(doc(db, collectionName, id), {
+        public: false,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      setContentMessage(error instanceof Error ? `Item could not be hidden: ${error.message}` : "Item could not be hidden.");
+    }
   }
 
   const authorized = Boolean(user && profile?.active);

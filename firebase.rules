@@ -19,22 +19,22 @@ service cloud.firestore {
     }
 
     match /publicAnnouncements/{id} {
-      allow read: if resource.data.published == true;
+      allow read: if resource.data.published == true || isBoardMember();
       allow write: if isBoardMember();
     }
 
     match /publicDocuments/{id} {
-      allow read: if resource.data.approved == true && resource.data.public == true;
+      allow read: if (resource.data.approved == true && resource.data.public == true) || isBoardMember();
       allow write: if isBoardMember();
     }
 
     match /calendarEvents/{id} {
-      allow read: if resource.data.public == true;
+      allow read: if resource.data.public == true || isBoardMember();
       allow write: if isBoardMember();
     }
 
     match /galleryItems/{id} {
-      allow read: if resource.data.public == true;
+      allow read: if resource.data.public == true || isBoardMember();
       allow write: if isBoardMember();
     }
 
