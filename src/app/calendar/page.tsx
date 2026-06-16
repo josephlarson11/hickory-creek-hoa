@@ -61,15 +61,23 @@ export default function CalendarPage() {
         </div>
         {view === "list" ? (
           <div className="grid gap-5">
-            {allEvents.map((event) => <EventCard key={event.id} event={event} />)}
+            {allEvents.length ? allEvents.map((event) => <EventCard key={event.id} event={event} />) : <EmptyCalendar />}
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-3">
-            {allEvents.map((event) => <EventCard key={event.id} event={event} compact />)}
+            {allEvents.length ? allEvents.map((event) => <EventCard key={event.id} event={event} compact />) : <EmptyCalendar />}
           </div>
         )}
       </section>
     </>
+  );
+}
+
+function EmptyCalendar() {
+  return (
+    <p className="rounded border border-stone bg-white p-6 shadow-soft">
+      No public calendar events are currently posted.
+    </p>
   );
 }
 

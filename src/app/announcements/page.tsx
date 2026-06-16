@@ -76,7 +76,7 @@ export default function AnnouncementsPage() {
           </label>
         </div>
         <div className="grid gap-5">
-          {visible.map((item) => (
+          {visible.length ? visible.map((item) => (
             <article key={item.id} className="rounded border border-stone bg-white p-6 shadow-soft">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-bold text-forest">
                 <span>{formatDate(item.publishDate)}</span>
@@ -85,7 +85,11 @@ export default function AnnouncementsPage() {
               <h2 className="mt-3 font-serif text-2xl font-bold text-burgundy">{item.title}</h2>
               <p className="mt-3 leading-7">{item.content}</p>
             </article>
-          ))}
+          )) : (
+            <p className="rounded border border-stone bg-white p-6 shadow-soft">
+              No announcements are currently published.
+            </p>
+          )}
         </div>
       </section>
     </>

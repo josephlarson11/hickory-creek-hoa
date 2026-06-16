@@ -59,13 +59,13 @@ export default function HomePage() {
           href="/announcements"
           cta="All announcements"
         >
-          {latestAnnouncements.map((item) => (
+          {latestAnnouncements.length ? latestAnnouncements.map((item) => (
             <article key={item.id} className="border-b border-stone/70 pb-4 last:border-0 last:pb-0">
               <p className="text-sm font-bold text-forest">{formatDate(item.publishDate)}</p>
               <h2 className="mt-1 font-serif text-xl font-bold">{item.title}</h2>
               <p className="mt-2 text-sm leading-6">{item.summary}</p>
             </article>
-          ))}
+          )) : <p className="text-sm leading-6">No current announcements.</p>}
         </HomePanel>
 
         <HomePanel
@@ -74,13 +74,13 @@ export default function HomePage() {
           href="/calendar"
           cta="View calendar"
         >
-          {upcomingEvents.map((item) => (
+          {upcomingEvents.length ? upcomingEvents.map((item) => (
             <article key={item.id} className="border-b border-stone/70 pb-4 last:border-0 last:pb-0">
               <p className="text-sm font-bold text-forest">{formatDate(item.date)}</p>
               <h2 className="mt-1 font-serif text-xl font-bold">{item.title}</h2>
               <p className="mt-2 text-sm leading-6">{item.location}</p>
             </article>
-          ))}
+          )) : <p className="text-sm leading-6">No upcoming meetings posted.</p>}
         </HomePanel>
 
         <HomePanel

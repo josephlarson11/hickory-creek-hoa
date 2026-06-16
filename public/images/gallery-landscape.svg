@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Community landscaping">
-  <rect width="800" height="600" fill="#F7F3EA"/>
-  <rect y="360" width="800" height="240" fill="#D8C3A5"/>
-  <path d="M0 455 C150 385 260 510 410 430 S650 390 800 450 L800 600 L0 600Z" fill="#2F5D3A"/>
-  <circle cx="165" cy="360" r="58" fill="#7A3E3A"/>
-  <circle cx="255" cy="330" r="80" fill="#5B7F52"/>
-  <circle cx="600" cy="350" r="95" fill="#5B7F52"/>
-</svg>

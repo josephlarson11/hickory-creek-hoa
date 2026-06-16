@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Mature oak canopy">
-  <rect width="800" height="600" fill="#D8C3A5"/>
-  <rect y="390" width="800" height="210" fill="#F7F3EA"/>
-  <rect x="350" y="220" width="70" height="250" fill="#6E4931"/>
-  <circle cx="315" cy="210" r="150" fill="#2F5D3A"/>
-  <circle cx="465" cy="210" r="145" fill="#315C3C"/>
-  <circle cx="395" cy="125" r="165" fill="#3F7049"/>
-</svg>
