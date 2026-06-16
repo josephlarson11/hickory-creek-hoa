@@ -2,20 +2,59 @@
 
 import { useMemo, useState } from "react";
 import { PageHero } from "@/components/page-hero";
-import { announcements } from "@/lib/content";
+import { Announcement, announcements } from "@/lib/content";
 import { formatDate } from "@/lib/format";
+import { collection, getDocs, query as firestoreQuery, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useEffect } from "react";
 
 export default function AnnouncementsPage() {
-  const [query, setQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState("newest");
+  const [liveAnnouncements, setLiveAnnouncements] = useState<Announcement[]>([]);
+
+  useEffect(() => {
+    async function loadLiveAnnouncements() {
+      if (!db) {
+        return;
+      }
+
+      const snapshot = await getDocs(firestoreQuery(
+        collection(db, "publicAnnouncements"),
+        where("published", "==", true)
+      ));
+
+      setLiveAnnouncements(snapshot.docs.map((item) => {
+        const data = item.data();
+        return {
+          id: item.id,
+          title: String(data.title ?? ""),
+          content: String(data.content ?? ""),
+          summary: String(data.summary ?? ""),
+          publishDate: String(data.publishDate ?? new Date().toISOString().slice(0, 10)),
+          author: String(data.author ?? "Board of Directors")
+        };
+      }));
+    }
+
+    loadLiveAnnouncements().catch(() => setLiveAnnouncements([]));
+  }, []);
+
+  const allAnnouncements = useMemo(() => {
+    const staticIds = new Set(liveAnnouncements.map((item) => item.id));
+    return [
+      ...liveAnnouncements,
+      ...announcements.filter((item) => !staticIds.has(item.id))
+    ];
+  }, [liveAnnouncements]);
 
   const visible = useMemo(() => {
-    return announcements
-      .filter((item) => `${item.title} ${item.content} ${item.author}`.toLowerCase().includes(query.toLowerCase()))
+    return allAnnouncements
+      .filter((item) => `${item.title} ${item.content} ${item.author}`.toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => sort === "newest"
         ? b.publishDate.localeCompare(a.publishDate)
         : a.publishDate.localeCompare(b.publishDate));
-  }, [query, sort]);
+  }, [allAnnouncements, searchQuery, sort]);
 
   return (
     <>
@@ -26,7 +65,7 @@ export default function AnnouncementsPage() {
         <div className="mb-6 grid gap-3 md:grid-cols-[1fr_220px]">
           <label>
             <span className="label">Search announcements</span>
-            <input className="field mt-1" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by title, content, or author" />
+            <input className="field mt-1" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search by title, content, or author" />
           </label>
           <label>
             <span className="label">Sort by date</span>
