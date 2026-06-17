@@ -407,6 +407,14 @@ export default function BoardPortalPage() {
               <p className="mt-3 rounded bg-green-50 p-3 text-sm font-bold text-green-800">
                 Welcome, {profile?.displayName || user?.email}. Role: {profile?.role}
               </p>
+              <a
+                className="btn-primary mt-5 w-fit"
+                href="https://drive.google.com/drive/folders/16TiOPSLaNYXSHio_1TY-vipu-dcX7Mx9?usp=drive_link"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Click to access Board Documents
+              </a>
               <button className="btn-secondary mt-5" type="button" onClick={handleSignOut}>
                 Sign out
               </button>
