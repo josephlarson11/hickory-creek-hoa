@@ -29,16 +29,19 @@ export type CalendarEvent = {
 export type BoardMember = {
   position: string;
   name: string;
+  phone?: string;
 };
 
 export const boardMembers: BoardMember[] = [
   {
     position: "President",
-    name: "Michelle Eguia"
+    name: "Michelle Eguia",
+    phone: "813-846-3480"
   },
   {
     position: "Vice President",
-    name: "Matt Creager"
+    name: "Matt Creager",
+    phone: "813-298-7621"
   },
   {
     position: "Secretary",

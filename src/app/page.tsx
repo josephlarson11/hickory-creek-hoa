@@ -1,14 +1,92 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, CalendarDays, FileText, Megaphone, Send } from "lucide-react";
-import { announcements, documents, events } from "@/lib/content";
+import { Announcement, announcements, CalendarEvent, documents, events } from "@/lib/content";
 import { formatDate } from "@/lib/format";
+import { collection, getDocs, query as firestoreQuery, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-const latestAnnouncements = announcements.slice(0, 3);
-const upcomingEvents = events.slice(0, 3);
 const recentDocuments = documents.slice(0, 4);
 
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 export default function HomePage() {
+  const [liveAnnouncements, setLiveAnnouncements] = useState<Announcement[]>([]);
+  const [liveEvents, setLiveEvents] = useState<CalendarEvent[]>([]);
+
+  useEffect(() => {
+    async function loadHomeContent() {
+      if (!db) {
+        return;
+      }
+
+      const [announcementSnapshot, eventSnapshot] = await Promise.all([
+        getDocs(firestoreQuery(
+          collection(db, "publicAnnouncements"),
+          where("published", "==", true)
+        )),
+        getDocs(firestoreQuery(
+          collection(db, "calendarEvents"),
+          where("public", "==", true)
+        ))
+      ]);
+
+      setLiveAnnouncements(announcementSnapshot.docs.map((item) => {
+        const data = item.data();
+        return {
+          id: item.id,
+          title: String(data.title ?? ""),
+          content: String(data.content ?? ""),
+          summary: String(data.summary ?? ""),
+          publishDate: String(data.publishDate ?? new Date().toISOString().slice(0, 10)),
+          author: String(data.author ?? "Board of Directors")
+        };
+      }));
+
+      setLiveEvents(eventSnapshot.docs.map((item) => {
+        const data = item.data();
+        return {
+          id: item.id,
+          title: String(data.title ?? ""),
+          date: String(data.date ?? new Date().toISOString().slice(0, 10)),
+          time: String(data.time ?? ""),
+          location: String(data.location ?? ""),
+          type: String(data.type ?? "Community Event") as CalendarEvent["type"]
+        };
+      }));
+    }
+
+    loadHomeContent().catch(() => {
+      setLiveAnnouncements([]);
+      setLiveEvents([]);
+    });
+  }, []);
+
+  const latestAnnouncements = useMemo(() => {
+    const staticIds = new Set(liveAnnouncements.map((item) => item.id));
+    return [...liveAnnouncements, ...announcements.filter((item) => !staticIds.has(item.id))]
+      .sort((a, b) => b.publishDate.localeCompare(a.publishDate))
+      .slice(0, 3);
+  }, [liveAnnouncements]);
+
+  const upcomingEvents = useMemo(() => {
+    const today = localDateString();
+    const staticIds = new Set(liveEvents.map((item) => item.id));
+    return [...liveEvents, ...events.filter((item) => !staticIds.has(item.id))]
+      .filter((item) => item.date >= today)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 3);
+  }, [liveEvents]);
+
   return (
     <>
       <section className="relative overflow-hidden bg-ink text-white">

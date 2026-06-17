@@ -1,4 +1,4 @@
-import { Mail } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { PageHero } from "@/components/page-hero";
 import { boardMembers } from "@/lib/content";
 
@@ -20,13 +20,19 @@ export default function BoardPage() {
       <section className="section">
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {boardMembers.map((member) => (
-            <article key={member.position} className="rounded border border-stone bg-white p-6 shadow-soft">
+            <article key={member.name} className="rounded border border-stone bg-white p-6 shadow-soft">
               <p className="text-sm font-bold uppercase tracking-[0.12em] text-forest">
                 {member.position}
               </p>
               <h2 className="mt-3 font-serif text-3xl font-bold text-burgundy">
                 {member.name}
               </h2>
+              {member.phone ? (
+                <a className="mt-4 inline-flex items-center gap-2 font-bold text-forest" href={`tel:${member.phone.replaceAll("-", "")}`}>
+                  <Phone aria-hidden="true" size={18} />
+                  {member.phone}
+                </a>
+              ) : null}
             </article>
           ))}
         </div>
