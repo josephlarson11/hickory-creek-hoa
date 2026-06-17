@@ -17,15 +17,19 @@ import {
   updateDoc
 } from "firebase/firestore";
 
-const privateDocs = [
-  "Financial Reports",
-  "Reserve Studies",
-  "Vendor Contracts",
-  "Insurance Policies",
-  "Legal Correspondence",
-  "Draft Minutes",
-  "Meeting Packets"
+const privateDocFolders = [
+  { name: "Financial Reports" },
+  { name: "Reserve Studies" },
+  { name: "Vendor Contracts" },
+  { name: "Insurance Policies" },
+  { name: "Legal Correspondence" },
+  { name: "Board Meetings", subfolders: ["Agenda", "Minutes"] },
+  { name: "Meeting Packets" }
 ];
+
+const privateDocCategories = privateDocFolders.flatMap((folder) =>
+  folder.subfolders ? folder.subfolders.map((subfolder) => `${folder.name} - ${subfolder}`) : folder.name
+);
 
 const requestStatuses = ["Submitted", "Under Review", "Added to Agenda", "Closed"];
 const minuteStatuses = ["Draft", "Board Review", "Approved", "Published"];
@@ -721,8 +725,19 @@ export default function BoardPortalPage() {
               Google Drive folder, then save the restricted share link here.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {privateDocs.map((item) => (
-                <div key={item} className="rounded border border-stone bg-cream p-4 font-bold">{item}</div>
+              {privateDocFolders.map((folder) => (
+                <div key={folder.name} className="rounded border border-stone bg-cream p-4">
+                  <p className="font-bold">{folder.name}</p>
+                  {folder.subfolders ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {folder.subfolders.map((subfolder) => (
+                        <span key={subfolder} className="rounded border border-stone bg-white px-3 py-1 text-sm font-bold text-forest">
+                          {subfolder}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               ))}
             </div>
           </div>
@@ -730,7 +745,7 @@ export default function BoardPortalPage() {
             <ContentForm title="Add Private Board Document" onSubmit={handleBoardDocumentSubmit}>
               <input className="field" name="title" placeholder="Document title" required />
               <select className="field" name="category" defaultValue="Meeting Packets">
-                {privateDocs.map((item) => <option key={item}>{item}</option>)}
+                {privateDocCategories.map((item) => <option key={item}>{item}</option>)}
               </select>
               <input className="field" name="href" placeholder="Restricted Google Drive link" required />
               <textarea className="field min-h-24" name="description" placeholder="Short description for board members" />
