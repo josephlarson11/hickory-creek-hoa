@@ -38,15 +38,15 @@ export const boardMembers: BoardMember[] = [
   },
   {
     position: "Vice President",
-    name: "Mariusz Tatara"
-  },
-  {
-    position: "Treasurer",
-    name: "Mike Gomez"
+    name: "Matt Creager"
   },
   {
     position: "Secretary",
     name: "Joe Larson"
+  },
+  {
+    position: "Treasurer",
+    name: "Mike Gomez"
   },
   {
     position: "Director",
@@ -54,7 +54,11 @@ export const boardMembers: BoardMember[] = [
   },
   {
     position: "Director",
-    name: "Matt Creager"
+    name: "Mariusz Tatara"
+  },
+  {
+    position: "Director",
+    name: "Howard Hunter"
   }
 ];
 
