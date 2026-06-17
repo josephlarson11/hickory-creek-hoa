@@ -51,10 +51,22 @@ type ManagedDocument = {
   approved?: boolean;
 };
 
+type ManagedAnnouncement = {
+  id: string;
+  title?: string;
+  summary?: string;
+  content?: string;
+  publishDate?: string;
+  author?: string;
+  published?: boolean;
+};
+
 type ManagedEvent = {
   id: string;
   title?: string;
   date?: string;
+  time?: string;
+  location?: string;
   type?: string;
   public?: boolean;
 };
@@ -84,10 +96,13 @@ export default function BoardPortalPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [submissions, setSubmissions] = useState<ResidentSubmission[]>([]);
+  const [managedAnnouncements, setManagedAnnouncements] = useState<ManagedAnnouncement[]>([]);
   const [managedDocuments, setManagedDocuments] = useState<ManagedDocument[]>([]);
   const [managedEvents, setManagedEvents] = useState<ManagedEvent[]>([]);
   const [managedGallery, setManagedGallery] = useState<ManagedGalleryItem[]>([]);
   const [boardDocuments, setBoardDocuments] = useState<BoardDocument[]>([]);
+  const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [boardMessage, setBoardMessage] = useState("");
   const [announcementMessage, setAnnouncementMessage] = useState("");
   const [contentMessage, setContentMessage] = useState("");
@@ -131,12 +146,17 @@ export default function BoardPortalPage() {
 
   useEffect(() => {
     if (!db || !user || !profile?.active) {
+      setManagedAnnouncements([]);
       setManagedDocuments([]);
       setManagedEvents([]);
       setManagedGallery([]);
       setBoardDocuments([]);
       return;
     }
+
+    const unsubAnnouncements = onSnapshot(collection(db, "publicAnnouncements"), (snapshot) => {
+      setManagedAnnouncements(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
+    }, (error) => setAnnouncementMessage(`Announcements could not load: ${error.message}`));
 
     const unsubDocuments = onSnapshot(collection(db, "publicDocuments"), (snapshot) => {
       setManagedDocuments(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
@@ -160,6 +180,7 @@ export default function BoardPortalPage() {
     }, (error) => setBoardDocumentMessage(`Private board documents could not load: ${error.message}`));
 
     return () => {
+      unsubAnnouncements();
       unsubDocuments();
       unsubEvents();
       unsubGallery();
@@ -230,6 +251,33 @@ export default function BoardPortalPage() {
     }
   }
 
+  async function handleAnnouncementUpdate(event: FormEvent<HTMLFormElement>, id: string) {
+    event.preventDefault();
+    if (!db) {
+      return;
+    }
+
+    try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      const content = String(formData.get("content") ?? "");
+
+      await updateDoc(doc(db, "publicAnnouncements", id), {
+        title: String(formData.get("title") ?? ""),
+        summary: String(formData.get("summary") || content.slice(0, 150)),
+        content,
+        publishDate: String(formData.get("publishDate") ?? new Date().toISOString().slice(0, 10)),
+        published: formData.get("published") === "on",
+        updatedAt: serverTimestamp()
+      });
+
+      setEditingAnnouncementId(null);
+      setAnnouncementMessage("Announcement updated.");
+    } catch (error) {
+      setAnnouncementMessage(error instanceof Error ? `Announcement could not be updated: ${error.message}` : "Announcement could not be updated.");
+    }
+  }
+
   async function handleDocumentSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!db) {
@@ -280,6 +328,33 @@ export default function BoardPortalPage() {
       setContentMessage("Calendar event saved.");
     } catch (error) {
       setContentMessage(error instanceof Error ? `Calendar event could not be saved: ${error.message}` : "Calendar event could not be saved.");
+    }
+  }
+
+  async function handleEventUpdate(event: FormEvent<HTMLFormElement>, id: string) {
+    event.preventDefault();
+    if (!db) {
+      return;
+    }
+
+    try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+
+      await updateDoc(doc(db, "calendarEvents", id), {
+        title: String(formData.get("title") ?? ""),
+        date: String(formData.get("date") ?? ""),
+        time: String(formData.get("time") ?? ""),
+        location: String(formData.get("location") ?? ""),
+        type: String(formData.get("type") ?? "Community Event"),
+        public: formData.get("public") === "on",
+        updatedAt: serverTimestamp()
+      });
+
+      setEditingEventId(null);
+      setContentMessage("Calendar event updated.");
+    } catch (error) {
+      setContentMessage(error instanceof Error ? `Calendar event could not be updated: ${error.message}` : "Calendar event could not be updated.");
     }
   }
 
@@ -519,6 +594,43 @@ export default function BoardPortalPage() {
               <button className="btn-primary w-fit" type="submit">Save announcement</button>
               {announcementMessage ? <p className="rounded bg-green-50 p-3 text-sm font-bold text-green-800">{announcementMessage}</p> : null}
             </form>
+            <div className="mt-8 rounded border border-stone bg-cream p-5">
+              <h3 className="font-serif text-2xl font-bold text-burgundy">Posted Announcements</h3>
+              <div className="mt-4 grid gap-4">
+                {managedAnnouncements.length ? managedAnnouncements.map((item) => (
+                  <article key={item.id} className="rounded border border-stone bg-white p-4">
+                    {editingAnnouncementId === item.id ? (
+                      <form onSubmit={(event) => handleAnnouncementUpdate(event, item.id)} className="grid gap-3">
+                        <input className="field" name="title" defaultValue={item.title ?? ""} placeholder="Announcement title" required />
+                        <input className="field" name="publishDate" type="date" defaultValue={item.publishDate ?? new Date().toISOString().slice(0, 10)} required />
+                        <input className="field" name="summary" defaultValue={item.summary ?? ""} placeholder="Short summary" />
+                        <textarea className="field min-h-32" name="content" defaultValue={item.content ?? ""} placeholder="Announcement text" required />
+                        <Toggle name="published" label="Published" defaultChecked={item.published === true} />
+                        <div className="flex flex-wrap gap-3">
+                          <button className="btn-primary min-h-9 px-3 py-2 text-sm" type="submit">Save changes</button>
+                          <button className="btn-secondary min-h-9 px-3 py-2 text-sm" type="button" onClick={() => setEditingAnnouncementId(null)}>Cancel</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="font-bold text-burgundy">{item.title || "Untitled announcement"}</p>
+                            <p className="mt-1 text-sm font-bold text-forest">{item.publishDate || "No date"} - {item.published ? "Published" : "Draft"}</p>
+                          </div>
+                          <button className="btn-secondary min-h-9 px-3 py-2 text-sm" type="button" onClick={() => setEditingAnnouncementId(item.id)}>
+                            Edit
+                          </button>
+                        </div>
+                        {item.summary ? <p className="mt-3 text-sm leading-6">{item.summary}</p> : null}
+                      </>
+                    )}
+                  </article>
+                )) : (
+                  <p className="text-sm">No Firestore announcements yet.</p>
+                )}
+              </div>
+            </div>
           </div>
         </section>
       ) : null}
@@ -580,7 +692,15 @@ export default function BoardPortalPage() {
             </ManagedList>
             <ManagedList title="Firestore Events">
               {managedEvents.map((item) => (
-                <ManagedRow key={item.id} title={item.title || "Untitled event"} meta={`${item.type || "Event"} ${item.date || ""}`} publicValue={item.public} onHide={() => hideManagedItem("calendarEvents", item.id)} />
+                <EditableEventRow
+                  key={item.id}
+                  item={item}
+                  editing={editingEventId === item.id}
+                  onEdit={() => setEditingEventId(item.id)}
+                  onCancel={() => setEditingEventId(null)}
+                  onSubmit={(event) => handleEventUpdate(event, item.id)}
+                  onHide={() => hideManagedItem("calendarEvents", item.id)}
+                />
               ))}
             </ManagedList>
             <ManagedList title="Firestore Gallery">
@@ -730,6 +850,66 @@ function ManagedList({ title, children }: { title: string; children: React.React
       <h3 className="font-serif text-2xl font-bold text-burgundy">{title}</h3>
       <div className="mt-4 grid gap-3">
         {children || <p className="text-sm">No Firestore-managed items yet.</p>}
+      </div>
+    </div>
+  );
+}
+
+function EditableEventRow({
+  item,
+  editing,
+  onEdit,
+  onCancel,
+  onSubmit,
+  onHide
+}: {
+  item: ManagedEvent;
+  editing: boolean;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onHide: () => void;
+}) {
+  if (editing) {
+    return (
+      <form onSubmit={onSubmit} className="grid gap-3 rounded border border-stone bg-cream p-3">
+        <input className="field" name="title" defaultValue={item.title ?? ""} placeholder="Event title" required />
+        <input className="field" name="date" type="date" defaultValue={item.date ?? ""} required />
+        <input className="field" name="time" defaultValue={item.time ?? ""} placeholder="6:30 PM" required />
+        <input className="field" name="location" defaultValue={item.location ?? ""} placeholder="Location or online" required />
+        <select className="field" name="type" defaultValue={item.type ?? "Community Event"}>
+          <option>Board Meeting</option>
+          <option>Annual Meeting</option>
+          <option>Community Event</option>
+        </select>
+        <Toggle name="public" label="Show publicly" defaultChecked={item.public === true} />
+        <div className="flex flex-wrap gap-3">
+          <button className="btn-primary min-h-9 px-3 py-2 text-sm" type="submit">Save changes</button>
+          <button className="btn-secondary min-h-9 px-3 py-2 text-sm" type="button" onClick={onCancel}>Cancel</button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <div className="rounded border border-stone bg-cream p-3">
+      <p className="font-bold">{item.title || "Untitled event"}</p>
+      <p className="mt-1 break-words text-sm">{item.type || "Event"} - {item.date || "No date"} {item.time || ""}</p>
+      {item.location ? <p className="mt-1 break-words text-sm">{item.location}</p> : null}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <span className="text-xs font-bold uppercase tracking-[0.12em] text-forest">
+          {item.public ? "Public" : "Hidden"}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          <button className="btn-secondary min-h-9 px-3 py-1 text-xs" type="button" onClick={onEdit}>
+            Edit
+          </button>
+          {item.public ? (
+            <button className="btn-secondary min-h-9 px-3 py-1 text-xs" type="button" onClick={onHide}>
+              Hide
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
