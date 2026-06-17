@@ -66,6 +66,16 @@ type ManagedGalleryItem = {
   public?: boolean;
 };
 
+type BoardDocument = {
+  id: string;
+  title?: string;
+  category?: string;
+  href?: string;
+  description?: string;
+  active?: boolean;
+  uploadedBy?: string;
+};
+
 export default function BoardPortalPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -77,9 +87,11 @@ export default function BoardPortalPage() {
   const [managedDocuments, setManagedDocuments] = useState<ManagedDocument[]>([]);
   const [managedEvents, setManagedEvents] = useState<ManagedEvent[]>([]);
   const [managedGallery, setManagedGallery] = useState<ManagedGalleryItem[]>([]);
+  const [boardDocuments, setBoardDocuments] = useState<BoardDocument[]>([]);
   const [boardMessage, setBoardMessage] = useState("");
   const [announcementMessage, setAnnouncementMessage] = useState("");
   const [contentMessage, setContentMessage] = useState("");
+  const [boardDocumentMessage, setBoardDocumentMessage] = useState("");
 
   useEffect(() => {
     if (!auth) {
@@ -122,6 +134,7 @@ export default function BoardPortalPage() {
       setManagedDocuments([]);
       setManagedEvents([]);
       setManagedGallery([]);
+      setBoardDocuments([]);
       return;
     }
 
@@ -137,10 +150,20 @@ export default function BoardPortalPage() {
       setManagedGallery(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
     }, (error) => setContentMessage(`Gallery items could not load: ${error.message}`));
 
+    const boardDocumentsQuery = query(
+      collection(db, "boardDocuments"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubBoardDocuments = onSnapshot(boardDocumentsQuery, (snapshot) => {
+      setBoardDocuments(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
+    }, (error) => setBoardDocumentMessage(`Private board documents could not load: ${error.message}`));
+
     return () => {
       unsubDocuments();
       unsubEvents();
       unsubGallery();
+      unsubBoardDocuments();
     };
   }, [profile?.active, user]);
 
@@ -283,6 +306,32 @@ export default function BoardPortalPage() {
     }
   }
 
+  async function handleBoardDocumentSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!db || !profile) {
+      return;
+    }
+
+    try {
+      const form = event.currentTarget;
+      const formData = new FormData(form);
+      await addDoc(collection(db, "boardDocuments"), {
+        title: String(formData.get("title") ?? ""),
+        category: String(formData.get("category") ?? "Meeting Packets"),
+        href: String(formData.get("href") ?? ""),
+        description: String(formData.get("description") ?? ""),
+        active: true,
+        uploadedBy: profile.displayName || profile.role,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      form.reset();
+      setBoardDocumentMessage("Private board document saved.");
+    } catch (error) {
+      setBoardDocumentMessage(error instanceof Error ? `Private board document could not be saved: ${error.message}` : "Private board document could not be saved.");
+    }
+  }
+
   async function hideManagedItem(collectionName: string, id: string) {
     if (!db) {
       return;
@@ -298,7 +347,49 @@ export default function BoardPortalPage() {
     }
   }
 
+  async function archiveBoardDocument(id: string) {
+    if (!db) {
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, "boardDocuments", id), {
+        active: false,
+        updatedAt: serverTimestamp()
+      });
+      setBoardDocumentMessage("Private board document archived.");
+    } catch (error) {
+      setBoardDocumentMessage(error instanceof Error ? `Private board document could not be archived: ${error.message}` : "Private board document could not be archived.");
+    }
+  }
+
   const authorized = Boolean(user && profile?.active);
+
+  if (!authorized) {
+    return (
+      <section className="section flex justify-center">
+        <form onSubmit={handleSignIn} className="w-full max-w-md rounded border border-stone bg-white p-6 shadow-soft">
+          <Lock aria-hidden="true" className="text-forest" size={34} />
+          <h1 className="mt-4 font-serif text-3xl font-bold text-burgundy">Board Sign In</h1>
+          <p className="mt-3 text-sm leading-6">
+            Sign in with an approved board member email and Firebase password.
+          </p>
+          <label className="mt-5 block">
+            <span className="label">Board member email</span>
+            <input className="field mt-1" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" required />
+          </label>
+          <label className="mt-4 block">
+            <span className="label">Password</span>
+            <input className="field mt-1" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          </label>
+          <button className="btn-primary mt-5" type="submit" disabled={loading}>
+            {loading ? "Checking..." : "Sign in"}
+          </button>
+          {message ? <p className="mt-4 rounded bg-red-50 p-3 text-sm font-bold text-red-800">{message}</p> : null}
+        </form>
+      </section>
+    );
+  }
 
   return (
     <>
@@ -366,7 +457,7 @@ export default function BoardPortalPage() {
                   <div>
                     <p className="text-sm font-bold text-forest">{item.kind || "Resident request"}</p>
                     <h3 className="mt-1 font-serif text-2xl font-bold text-burgundy">{item.topic || "No topic provided"}</h3>
-                    <p className="mt-2 text-sm font-bold">{item.residentName} · {item.propertyAddress}</p>
+                    <p className="mt-2 text-sm font-bold">{item.residentName} - {item.propertyAddress}</p>
                     <p className="mt-1 text-sm">{item.email}</p>
                     <p className="mt-3 leading-7">{item.description || item.message}</p>
                   </div>
@@ -494,10 +585,13 @@ export default function BoardPortalPage() {
       ) : null}
 
       <section id="documents" className={`bg-white ${authorized ? "" : "opacity-45"}`} aria-hidden={!authorized}>
-        <div className="section grid gap-8 lg:grid-cols-2">
+        <div className="section grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <h2 className="font-serif text-3xl font-bold text-burgundy">Private Board Documents</h2>
-            <p className="mt-3 leading-7">Firebase Storage is disabled to keep the project no-cost. For now, public PDF updates are made by replacing files in the website project and republishing through GitHub.</p>
+            <p className="mt-3 leading-7">
+              Firebase Storage is disabled to keep the project no-cost. Store private files in a board-restricted
+              Google Drive folder, then save the restricted share link here.
+            </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {privateDocs.map((item) => (
                 <div key={item} className="rounded border border-stone bg-cream p-4 font-bold">{item}</div>
@@ -505,6 +599,52 @@ export default function BoardPortalPage() {
             </div>
           </div>
           <div>
+            <ContentForm title="Add Private Board Document" onSubmit={handleBoardDocumentSubmit}>
+              <input className="field" name="title" placeholder="Document title" required />
+              <select className="field" name="category" defaultValue="Meeting Packets">
+                {privateDocs.map((item) => <option key={item}>{item}</option>)}
+              </select>
+              <input className="field" name="href" placeholder="Restricted Google Drive link" required />
+              <textarea className="field min-h-24" name="description" placeholder="Short description for board members" />
+            </ContentForm>
+            {boardDocumentMessage ? <p className="mt-4 rounded bg-green-50 p-3 text-sm font-bold text-green-800">{boardDocumentMessage}</p> : null}
+            <div className="mt-5 rounded border border-stone bg-cream p-5">
+              <h3 className="font-serif text-2xl font-bold text-burgundy">Saved Private Documents</h3>
+              <div className="mt-4 grid gap-3">
+                {boardDocuments.length ? boardDocuments.map((item) => (
+                  <article key={item.id} className="rounded border border-stone bg-white p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-bold text-burgundy">{item.title || "Untitled document"}</p>
+                        <p className="mt-1 text-sm font-bold text-forest">{item.category || "Board document"}</p>
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-forest">
+                        {item.active === false ? "Archived" : "Active"}
+                      </span>
+                    </div>
+                    {item.description ? <p className="mt-3 text-sm leading-6">{item.description}</p> : null}
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      {item.href ? (
+                        <a className="btn-primary min-h-9 px-3 py-2 text-sm" href={item.href} target="_blank" rel="noreferrer">
+                          View
+                        </a>
+                      ) : null}
+                      {item.active === false ? null : (
+                        <button className="btn-secondary min-h-9 px-3 py-2 text-sm" type="button" onClick={() => archiveBoardDocument(item.id)}>
+                          Archive
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                )) : (
+                  <p className="text-sm">No private board documents have been saved yet.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="section pt-0">
+          <div className="max-w-3xl">
             <h2 className="font-serif text-3xl font-bold text-burgundy">Minutes Workflow</h2>
             <div className="mt-5 grid gap-3">
               {minuteStatuses.map((status, index) => (
