@@ -11,7 +11,7 @@ const navItems = [
   ["Home", "/"],
   ["About", "/about"],
   ["Announcements", "/announcements"],
-  ["Documents", "/documents"],
+  ["Document Access", "/documents"],
   ["Calendar", "/calendar"],
   ["Gallery", "/gallery"],
   ["Requests", "/resident-requests"],

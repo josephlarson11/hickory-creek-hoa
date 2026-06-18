@@ -67,35 +67,7 @@ export const boardMembers: BoardMember[] = [
 
 export const announcements: Announcement[] = [];
 
-export const documents: DocumentItem[] = [
-  {
-    id: "restrictions-first-addition",
-    title: "Hickory Creek Restrictions - 1st Addition",
-    category: "Declaration / CC&Rs",
-    updatedAt: "2023-01-05",
-    description: "Revived amended and restated restrictions for the 1st Addition.",
-    href: "/documents/restrictions/hickory-creek-1st-addition-restrictions.pdf",
-    isApproved: true
-  },
-  {
-    id: "restrictions-second-addition",
-    title: "Hickory Creek Restrictions - 2nd Addition",
-    category: "Declaration / CC&Rs",
-    updatedAt: "2023-01-05",
-    description: "Revived amended and restated restrictions for the 2nd Addition.",
-    href: "/documents/restrictions/hickory-creek-2nd-addition-restrictions.pdf",
-    isApproved: true
-  },
-  {
-    id: "restrictions-third-addition",
-    title: "Hickory Creek Restrictions - 3rd Addition",
-    category: "Declaration / CC&Rs",
-    updatedAt: "2023-01-05",
-    description: "Revitalized restrictions for the 3rd Addition.",
-    href: "/documents/restrictions/hickory-creek-3rd-addition-restrictions.pdf",
-    isApproved: true
-  }
-];
+export const documents: DocumentItem[] = [];
 
 export const events: CalendarEvent[] = [];
 

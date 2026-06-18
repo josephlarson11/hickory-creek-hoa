@@ -24,7 +24,7 @@ service cloud.firestore {
     }
 
     match /publicDocuments/{id} {
-      allow read: if (resource.data.approved == true && resource.data.public == true) || isBoardMember();
+      allow read: if isBoardMember();
       allow write: if isBoardMember();
     }
 

@@ -46,15 +46,6 @@ type ResidentSubmission = {
   status?: string;
 };
 
-type ManagedDocument = {
-  id: string;
-  title?: string;
-  category?: string;
-  href?: string;
-  public?: boolean;
-  approved?: boolean;
-};
-
 type ManagedAnnouncement = {
   id: string;
   title?: string;
@@ -101,7 +92,6 @@ export default function BoardPortalPage() {
   const [message, setMessage] = useState("");
   const [submissions, setSubmissions] = useState<ResidentSubmission[]>([]);
   const [managedAnnouncements, setManagedAnnouncements] = useState<ManagedAnnouncement[]>([]);
-  const [managedDocuments, setManagedDocuments] = useState<ManagedDocument[]>([]);
   const [managedEvents, setManagedEvents] = useState<ManagedEvent[]>([]);
   const [managedGallery, setManagedGallery] = useState<ManagedGalleryItem[]>([]);
   const [boardDocuments, setBoardDocuments] = useState<BoardDocument[]>([]);
@@ -151,7 +141,6 @@ export default function BoardPortalPage() {
   useEffect(() => {
     if (!db || !user || !profile?.active) {
       setManagedAnnouncements([]);
-      setManagedDocuments([]);
       setManagedEvents([]);
       setManagedGallery([]);
       setBoardDocuments([]);
@@ -161,10 +150,6 @@ export default function BoardPortalPage() {
     const unsubAnnouncements = onSnapshot(collection(db, "publicAnnouncements"), (snapshot) => {
       setManagedAnnouncements(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
     }, (error) => setAnnouncementMessage(`Announcements could not load: ${error.message}`));
-
-    const unsubDocuments = onSnapshot(collection(db, "publicDocuments"), (snapshot) => {
-      setManagedDocuments(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
-    }, (error) => setContentMessage(`Document listings could not load: ${error.message}`));
 
     const unsubEvents = onSnapshot(collection(db, "calendarEvents"), (snapshot) => {
       setManagedEvents(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
@@ -185,7 +170,6 @@ export default function BoardPortalPage() {
 
     return () => {
       unsubAnnouncements();
-      unsubDocuments();
       unsubEvents();
       unsubGallery();
       unsubBoardDocuments();
@@ -279,33 +263,6 @@ export default function BoardPortalPage() {
       setAnnouncementMessage("Announcement updated.");
     } catch (error) {
       setAnnouncementMessage(error instanceof Error ? `Announcement could not be updated: ${error.message}` : "Announcement could not be updated.");
-    }
-  }
-
-  async function handleDocumentSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!db) {
-      return;
-    }
-
-    try {
-      const form = event.currentTarget;
-      const formData = new FormData(form);
-      await addDoc(collection(db, "publicDocuments"), {
-        title: String(formData.get("title") ?? ""),
-        category: String(formData.get("category") ?? "Policies"),
-        description: String(formData.get("description") ?? ""),
-        href: String(formData.get("href") ?? ""),
-        updatedAtText: String(formData.get("updatedAt") ?? new Date().toISOString().slice(0, 10)),
-        approved: formData.get("approved") === "on",
-        public: formData.get("public") === "on",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-      form.reset();
-      setContentMessage("Document listing saved.");
-    } catch (error) {
-      setContentMessage(error instanceof Error ? `Document listing could not be saved: ${error.message}` : "Document listing could not be saved.");
     }
   }
 
@@ -522,7 +479,7 @@ export default function BoardPortalPage() {
         <div className={`grid gap-5 md:grid-cols-2 ${authorized ? "" : "opacity-45"}`} aria-hidden={!authorized}>
           <Widget icon={<ShieldCheck />} title="Pending Submissions" value={String(submissions.filter((item) => item.status !== "Closed").length)} text="Resident requests waiting for review." anchor="submissions" />
           <Widget icon={<Megaphone />} title="Announcements" value="New" text="Publish a public community update." anchor="announcements" />
-          <Widget icon={<FileUp />} title="Content Listings" value="Edit" text="Add document, calendar, and gallery listings." anchor="content" />
+          <Widget icon={<FileUp />} title="Content Listings" value="Edit" text="Add calendar and gallery listings." anchor="content" />
           <Widget icon={<Users />} title="Board Users" value={profile?.role ?? "-"} text="Manage users in Firebase for now." />
         </div>
       </section>
@@ -642,32 +599,14 @@ export default function BoardPortalPage() {
       {authorized ? (
         <section id="content" className="section">
           <p className="eyebrow">Content Listings</p>
-          <h2 className="mt-2 font-serif text-3xl font-bold text-burgundy">Documents, Calendar, and Gallery</h2>
+          <h2 className="mt-2 font-serif text-3xl font-bold text-burgundy">Calendar and Gallery</h2>
           <p className="mt-3 max-w-4xl leading-7">
-            These tools edit what appears on the public pages. For PDFs and photos, first add or replace
-            the file in GitHub, then paste its website path here.
+            These tools edit what appears on the public calendar and gallery pages. Documents remain restricted
+            through the board-only document area.
           </p>
           {contentMessage ? <p className="mt-4 rounded bg-green-50 p-3 text-sm font-bold text-green-800">{contentMessage}</p> : null}
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-3">
-            <ContentForm title="Add Document Listing" onSubmit={handleDocumentSubmit}>
-              <input className="field" name="title" placeholder="Document title" required />
-              <select className="field" name="category" defaultValue="Policies">
-                <option>Declaration / CC&Rs</option>
-                <option>Bylaws</option>
-                <option>Rules and Regulations</option>
-                <option>Architectural Forms</option>
-                <option>Approved Meeting Minutes</option>
-                <option>Budgets</option>
-                <option>Policies</option>
-              </select>
-              <input className="field" name="href" placeholder="/documents/minutes/example.pdf" required />
-              <input className="field" name="updatedAt" type="date" defaultValue={new Date().toISOString().slice(0, 10)} required />
-              <textarea className="field min-h-24" name="description" placeholder="Short description" required />
-              <Toggle name="approved" label="Approved" defaultChecked />
-              <Toggle name="public" label="Show publicly" defaultChecked />
-            </ContentForm>
-
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <ContentForm title="Add Calendar Event" onSubmit={handleEventSubmit}>
               <input className="field" name="title" placeholder="Event title" required />
               <input className="field" name="date" type="date" required />
@@ -688,12 +627,7 @@ export default function BoardPortalPage() {
             </ContentForm>
           </div>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-3">
-            <ManagedList title="Firestore Documents">
-              {managedDocuments.map((item) => (
-                <ManagedRow key={item.id} title={item.title || "Untitled document"} meta={item.category || "Document"} publicValue={item.public} onHide={() => hideManagedItem("publicDocuments", item.id)} />
-              ))}
-            </ManagedList>
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
             <ManagedList title="Firestore Events">
               {managedEvents.map((item) => (
                 <EditableEventRow

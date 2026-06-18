@@ -4,37 +4,29 @@ The board portal supports no-cost content management through Firestore.
 
 ## What Board Members Can Edit Online
 
-After signing in at `/board`, approved board members can:
+After signing in at `/board-portal`, approved board members can:
 
 - Review resident submissions and change statuses.
-- Create and publish announcements.
-- Add public document listings.
-- Add calendar events.
+- Create, edit, and publish announcements.
+- Add and edit calendar events.
 - Add gallery listings.
-- Hide Firestore-managed document, calendar, and gallery items.
+- Access restricted board documents through the board-only Google Drive link.
+- Save board-only document links in the Private Board Documents area.
 
-## Important No-Cost Limitation
+## Document Restriction Policy
 
-Firebase Storage is disabled to avoid upgrading the Firebase plan. That means the
-board portal does not upload PDF or image files directly.
+Documents should not be stored in `public/documents`.
 
-For documents and photos:
+GitHub Pages cannot password-protect files in the public website folder. If a
+document is committed under `public/documents`, it can be accessed by direct URL.
 
-1. Replace or add the PDF/image in the website project.
-2. Publish the update through GitHub.
-3. In the board portal, add or update the listing path.
-
-Common paths:
-
-```text
-/documents/restrictions/example.pdf
-/documents/minutes/example.pdf
-/images/example.jpg
-```
+Use the restricted Google Drive folder for association documents. Share files
+with specific approved board member emails, then save the restricted link in the
+Board Portal if a board-only listing is needed.
 
 ## Publishing Announcements
 
-1. Sign in to `/board`.
+1. Sign in to `/board-portal`.
 2. Complete the announcement form.
 3. Check `Publish to the public announcements page`.
 4. Click `Save announcement`.
@@ -44,16 +36,7 @@ Published announcements appear on `/announcements`.
 ## Calendar Events
 
 Use the calendar form in the board portal. Events marked `Show publicly` appear on
-`/calendar`.
-
-## Public Document Listings
-
-Use the document listing form in the board portal. A listing must be both:
-
-- Approved
-- Show publicly
-
-Only then will it appear on `/documents`.
+`/calendar` and on the home page Upcoming Meetings panel.
 
 ## Gallery Listings
 

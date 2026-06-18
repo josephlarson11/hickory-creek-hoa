@@ -8,7 +8,7 @@ export function SiteFooter() {
         <div>
           <h2 className="font-serif text-2xl font-bold">Hickory Creek Owners Association</h2>
           <p className="mt-3 text-sm leading-6 text-cream">
-            Public information, approved documents, community notices, and board resources for
+            Public information, community notices, and board resources for
             Hickory Creek in Brandon, Florida.
           </p>
         </div>
@@ -28,7 +28,7 @@ export function SiteFooter() {
         <div>
           <h2 className="font-bold text-stone">Resident Resources</h2>
           <div className="mt-3 grid gap-2 text-sm text-cream">
-            <Link href="/documents" className="hover:text-white">Public documents</Link>
+            <Link href="/documents" className="hover:text-white">Document access</Link>
             <Link href="/calendar" className="hover:text-white">Community calendar</Link>
             <Link href="/resident-requests" className="hover:text-white">Submission forms</Link>
             <Link href="/board-portal" className="hover:text-white">Board Portal</Link>

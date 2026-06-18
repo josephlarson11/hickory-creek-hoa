@@ -3,13 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, FileText, Megaphone, Send } from "lucide-react";
-import { Announcement, announcements, CalendarEvent, documents, events } from "@/lib/content";
+import { ArrowRight, CalendarDays, FileText, Lock, Megaphone, Send } from "lucide-react";
+import { Announcement, announcements, CalendarEvent, events } from "@/lib/content";
 import { formatDate } from "@/lib/format";
 import { collection, getDocs, query as firestoreQuery, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-
-const recentDocuments = documents.slice(0, 4);
 
 function localDateString(date = new Date()) {
   const year = date.getFullYear();
@@ -119,7 +117,7 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link className="btn-primary" href="/documents">
                 <FileText aria-hidden="true" size={18} />
-                View documents
+                Document access
               </Link>
               <Link className="btn-secondary border-white text-white hover:border-forest" href="/resident-requests">
                 <Send aria-hidden="true" size={18} />
@@ -162,18 +160,14 @@ export default function HomePage() {
         </HomePanel>
 
         <HomePanel
-          title="Recent Documents"
-          icon={<FileText aria-hidden="true" size={22} />}
-          href="/documents"
-          cta="Document library"
+          title="Board Documents"
+          icon={<Lock aria-hidden="true" size={22} />}
+          href="/board-portal"
+          cta="Board Portal"
         >
-          {recentDocuments.map((item) => (
-            <article key={item.id} className="border-b border-stone/70 pb-4 last:border-0 last:pb-0">
-              <p className="text-sm font-bold text-forest">{item.category}</p>
-              <h2 className="mt-1 font-serif text-xl font-bold">{item.title}</h2>
-              <p className="mt-2 text-sm leading-6">Updated {formatDate(item.updatedAt)}</p>
-            </article>
-          ))}
+          <p className="text-sm leading-6">
+            Association documents are restricted to authorized board members through the secure Board Portal.
+          </p>
         </HomePanel>
       </section>
 
@@ -185,7 +179,7 @@ export default function HomePage() {
               Common resident tasks in one place
             </h2>
             <p className="mt-4 max-w-3xl leading-7">
-              Find approved governing documents, request agenda time, contact the association,
+              Request agenda time, contact the association,
               and keep track of meetings without needing to email the board for routine items.
             </p>
           </div>

@@ -1,38 +1,24 @@
-# Publishing Approved Meeting Minutes
+# Managing Meeting Minutes
 
-Only approved minutes should appear on the public website.
+Meeting minutes should remain restricted unless the board later decides to make a
+specific document public.
 
-## Workflow
+## Restricted Workflow
 
-1. Upload draft minutes to the board portal as Draft.
-2. Move the minutes to Board Review when ready for board review.
-3. After approval, mark the minutes Approved.
-4. Export the approved minutes as a PDF.
-5. Add the PDF to the public document library.
-6. Mark the public document as Approved Meeting Minutes.
-7. Confirm the public Documents page shows the minutes.
+1. Draft minutes in the board's working document.
+2. Store draft and review copies in the restricted Google Drive folder.
+3. Use the `Board Meetings - Minutes` category in the Board Portal for
+   board-only links.
+4. Keep supporting agendas in `Board Meetings - Agenda`.
+5. Share Google Drive files with specific board member emails only.
 
-## Current Static Content Workflow
+## Important
 
-For GitHub Pages, place the approved PDF in:
-
-```text
-public/documents/minutes/
-```
-
-Then add a matching entry in:
+Do not place minutes PDFs or Word documents in:
 
 ```text
-src/lib/content.ts
+public/documents/
 ```
 
-Use:
-
-```json
-{
-  "category": "Approved Meeting Minutes",
-  "isApproved": true
-}
-```
-
-Draft, board review, and private meeting packet files should stay out of the public folder.
+Files in that folder are published by GitHub Pages and cannot be restricted by
+Firebase Authentication.
