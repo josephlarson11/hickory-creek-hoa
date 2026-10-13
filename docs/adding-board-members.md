@@ -1,34 +1,13 @@
-# Adding Future Board Members
+# Adding or Removing Board Members
 
-Only an administrator should add or remove board members.
+Board titles and website permissions are separate. A President, Treasurer, Secretary, or Director receives the **Board member** site role unless the board separately assigns **Administrator** responsibility.
 
-## Add a Board Member
+1. Have the person request and verify an individual resident account.
+2. Have a board member approve the resident request.
+3. Sign in as an Administrator and open **Administration**.
+4. Enter the exact account email, choose **Board member**, enter the officer title, and save.
+5. To remove board privileges, change the site role to **Resident**. Clear **Active account** only when all access should end.
 
-1. Create the user in Firebase Authentication using the board member's email address.
-2. Add a Firestore document in `boardUsers`.
-3. Use the email address as the document ID.
-4. Set `active` to `true`.
-5. Assign one role.
+Do not create shared passwords. Do not edit Firebase Authentication or `boardUsers` for routine board changes after the new portal is deployed.
 
-Example:
-
-```text
-Collection: boardUsers
-Document ID: secretary@example.com
-```
-
-```json
-{
-  "active": true,
-  "role": "Secretary",
-  "displayName": "Secretary Name"
-}
-```
-
-## Remove Access
-
-Set `active` to `false` in the user's `boardUsers` document. This preserves an access history while immediately blocking board-only records.
-
-## Reset Access
-
-Use Firebase Authentication to send a password reset email or a new sign-in link.
+See `secure-portal-administration.md` for the complete procedure and transfer checklist.

@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /portal/
+Disallow: /sign-in/
+Disallow: /board-portal/
 
 Sitemap: https://hickorycreekbrandon.com/sitemap.xml

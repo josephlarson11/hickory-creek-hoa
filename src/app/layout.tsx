@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | Hickory Creek Owners Association"
   },
   description:
-    "Public HOA information, announcements, calendar, resident forms, restricted document access, and board resources for Hickory Creek in Brandon, Florida.",
+    "Official association information and secure resident services for Hickory Creek in Brandon, Florida.",
   openGraph: {
     title: "Hickory Creek Owners Association of Brandon Florida",
     description:

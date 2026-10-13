@@ -1,8 +1,7 @@
 "use client";
 
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { db, firebaseConfigured, storage, storageEnabled } from "@/lib/firebase";
+import { auth, db, firebaseConfigured } from "@/lib/firebase";
 
 export type RequestKind = "board-meeting" | "annual-meeting" | "contact";
 
@@ -25,16 +24,7 @@ export async function submitResidentRequest(payload: SubmissionPayload) {
       id: `demo-${Date.now()}`
     };
   }
-
-  let attachmentUrl = "";
-  if (payload.attachment && storage && storageEnabled) {
-    const fileRef = ref(
-      storage,
-      `resident-submissions/${payload.kind}/${Date.now()}-${payload.attachment.name}`
-    );
-    await uploadBytes(fileRef, payload.attachment);
-    attachmentUrl = await getDownloadURL(fileRef);
-  }
+  if (!auth?.currentUser) throw new Error("Sign in with an approved resident account before submitting a request.");
 
   const docRef = await addDoc(collection(db, "residentSubmissions"), {
     kind: payload.kind,
@@ -44,7 +34,7 @@ export async function submitResidentRequest(payload: SubmissionPayload) {
     topic: payload.topic ?? "",
     message: payload.message ?? "",
     description: payload.description ?? "",
-    attachmentUrl,
+    submittedByUid: auth.currentUser.uid,
     status: "Submitted",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()

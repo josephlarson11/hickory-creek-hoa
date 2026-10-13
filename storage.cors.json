@@ -1,0 +1,12 @@
+[
+  {
+    "origin": [
+      "https://hickorycreekbrandon.com",
+      "https://www.hickorycreekbrandon.com",
+      "http://localhost:3000"
+    ],
+    "method": ["GET", "HEAD", "PUT", "POST"],
+    "responseHeader": ["Content-Type", "Authorization", "x-goog-resumable"],
+    "maxAgeSeconds": 3600
+  }
+]

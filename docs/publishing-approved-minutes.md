@@ -1,24 +1,11 @@
 # Managing Meeting Minutes
 
-Meeting minutes should remain restricted unless the board later decides to make a
-specific document public.
+Meeting minutes are protected documents. Board members manage them in the private portal.
 
-## Restricted Workflow
+1. Sign in and open **Documents**.
+2. Upload draft minutes as **Board only**.
+3. Use **Replace** for each reviewed version so the prior file remains in version history.
+4. After approval, keep the file **Board only** or create a resident-accessible record only when the board has authorized resident distribution.
+5. Archive superseded records instead of deleting them.
 
-1. Draft minutes in the board's working document.
-2. Store draft and review copies in the restricted Google Drive folder.
-3. Use the `Board Meetings - Minutes` category in the Board Portal for
-   board-only links.
-4. Keep supporting agendas in `Board Meetings - Agenda`.
-5. Share Google Drive files with specific board member emails only.
-
-## Important
-
-Do not place minutes PDFs or Word documents in:
-
-```text
-public/documents/
-```
-
-Files in that folder are published by GitHub Pages and cannot be restricted by
-Firebase Authentication.
+Never place minutes under `public/`, and never use a public Google Drive link. Protected files belong in Firebase Storage and must be opened through an authenticated portal session.

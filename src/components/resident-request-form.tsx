@@ -1,9 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Upload } from "lucide-react";
 import { RequestKind, submitResidentRequest } from "@/lib/submissions";
-import { storageEnabled } from "@/lib/firebase";
 
 export function ResidentRequestForm({
   kind,
@@ -73,19 +71,9 @@ export function ResidentRequestForm({
         <span className="label">{kind === "contact" ? "Message" : "Description"}</span>
         <textarea className="field mt-1 min-h-36" name={kind === "contact" ? "message" : "description"} required />
       </label>
-      {kind !== "contact" && storageEnabled ? (
-        <label className="mt-4 block">
-          <span className="label">Attachment</span>
-          <span className="mt-1 flex items-center gap-3 rounded border border-dashed border-stone bg-cream p-4">
-            <Upload aria-hidden="true" className="text-forest" />
-            <input className="block w-full text-sm" name="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
-          </span>
-        </label>
-      ) : null}
-      {kind !== "contact" && !storageEnabled ? (
+      {kind !== "contact" ? (
         <p className="mt-4 rounded bg-cream p-3 text-sm leading-6">
-          Attachments are currently disabled to keep the Firebase project on the no-cost setup.
-          Residents can submit the request details online and email files separately if needed.
+          Supporting attachments are handled through the secure proposal form in the private community portal.
         </p>
       ) : null}
       <button className="btn-primary mt-6" type="submit" disabled={status === "submitting"}>

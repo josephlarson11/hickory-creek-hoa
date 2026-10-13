@@ -1,5 +1,3 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import BoardPortalPage from "@/components/board-portal-page";
-
-export default BoardPortalPage;
+export default function Page() { redirect("/sign-in"); }

@@ -2,6 +2,7 @@ import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,7 +17,7 @@ export const firebaseConfigured = Boolean(
   firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId
 );
 
-export const storageEnabled = process.env.NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE === "true";
+export const storageEnabled = process.env.NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE !== "false";
 
 export const app = firebaseConfigured
   ? getApps()[0] ?? initializeApp(firebaseConfig)
@@ -25,3 +26,4 @@ export const app = firebaseConfigured
 export const auth = app ? getAuth(app) : null;
 export const db = app ? getFirestore(app) : null;
 export const storage = app && storageEnabled ? getStorage(app) : null;
+export const functions = app ? getFunctions(app, "us-central1") : null;

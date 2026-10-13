@@ -2,21 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { LogIn, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const navItems = [
   ["Home", "/"],
-  ["About", "/about"],
-  ["Announcements", "/announcements"],
-  ["Document Access", "/documents"],
-  ["Calendar", "/calendar"],
-  ["Gallery", "/gallery"],
-  ["Requests", "/resident-requests"],
   ["Contact", "/contact"],
-  ["Board", "/board"]
+  ["Request Access", "/access-request"]
 ];
 
 export function SiteHeader() {
@@ -64,6 +58,10 @@ export function SiteHeader() {
               </Link>
             );
           })}
+          <Link href="/sign-in" className="btn-primary ml-2 min-h-10 px-3 py-1">
+            <LogIn size={17} aria-hidden="true" />
+            Sign in
+          </Link>
         </div>
       </nav>
 
@@ -80,6 +78,10 @@ export function SiteHeader() {
                 {label}
               </Link>
             ))}
+            <Link href="/sign-in" onClick={() => setOpen(false)} className="btn-primary mt-2">
+              <LogIn size={17} aria-hidden="true" />
+              Sign in
+            </Link>
           </div>
         </div>
       ) : null}

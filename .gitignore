@@ -4,3 +4,5 @@ out
 .env*.local
 firebase-debug.log
 *.tsbuildinfo
+.private-migration/
+functions/lib/

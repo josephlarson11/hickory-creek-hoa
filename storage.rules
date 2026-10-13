@@ -2,26 +2,59 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    function signedIn() {
-      return request.auth != null;
+    function signedIn() { return request.auth != null; }
+    function profile() { return firestore.get(/databases/(default)/documents/userProfiles/$(request.auth.uid)); }
+    function legacyBoardProfile() { return firestore.get(/databases/(default)/documents/boardUsers/$(request.auth.token.email)); }
+    function isResident() {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/userProfiles/$(request.auth.uid))
+        && profile().data.active == true
+        && profile().data.role in ['resident', 'board', 'administrator'];
     }
-
     function isBoardMember() {
-      return signedIn() && firestore.get(/databases/(default)/documents/boardUsers/$(request.auth.token.email)).data.active == true;
+      return (isResident() && profile().data.role in ['board', 'administrator'])
+        || (signedIn()
+          && firestore.exists(/databases/(default)/documents/boardUsers/$(request.auth.token.email))
+          && legacyBoardProfile().data.active == true);
+    }
+    function validUpload() {
+      return request.resource.size < 20 * 1024 * 1024
+        && request.resource.contentType.matches('(application/pdf|image/.*|application/msword|application/vnd.openxmlformats-officedocument.*|text/plain)');
     }
 
-    match /public/{allPaths=**} {
-      allow read: if true;
-      allow write: if isBoardMember();
+    match /documents/{documentId}/{allPaths=**} {
+      allow read: if isBoardMember()
+        || (isResident()
+          && firestore.get(/databases/(default)/documents/associationDocuments/$(documentId)).data.visibility == 'resident'
+          && firestore.get(/databases/(default)/documents/associationDocuments/$(documentId)).data.active == true);
+      allow create, update: if isBoardMember() && validUpload();
+      allow delete: if false;
     }
-
-    match /resident-submissions/{allPaths=**} {
-      allow create: if request.resource.size < 10 * 1024 * 1024;
-      allow read, update, delete: if isBoardMember();
+    match /proposal-attachments/{proposalId}/{allPaths=**} {
+      allow read: if isBoardMember()
+        || (isResident()
+          && firestore.get(/databases/(default)/documents/proposals/$(proposalId)).data.submittedByUid == request.auth.uid);
+      allow create: if isResident()
+        && firestore.get(/databases/(default)/documents/proposals/$(proposalId)).data.submittedByUid == request.auth.uid
+        && validUpload();
+      allow update, delete: if false;
     }
-
-    match /board-private/{allPaths=**} {
-      allow read, write: if isBoardMember();
+    match /vote-attachments/{voteId}/{allPaths=**} {
+      allow read: if isBoardMember();
+      allow create: if isBoardMember() && validUpload();
+      allow update, delete: if false;
+    }
+    match /communication-attachments/{draftId}/{allPaths=**} {
+      allow read: if isBoardMember();
+      allow create: if isBoardMember() && validUpload();
+      allow update, delete: if false;
+    }
+    match /community-gallery/{itemId}/{allPaths=**} {
+      allow read: if isBoardMember()
+        || (isResident()
+          && firestore.get(/databases/(default)/documents/galleryItems/$(itemId)).data.public == true);
+      allow create: if isBoardMember() && validUpload();
+      allow update, delete: if false;
     }
   }
 }

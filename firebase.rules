@@ -2,61 +2,100 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
+    function signedIn() { return request.auth != null; }
+    function emailVerified() { return signedIn() && request.auth.token.email_verified == true; }
+    function profile() { return get(/databases/$(database)/documents/userProfiles/$(request.auth.uid)); }
+    function legacyBoardProfile() { return get(/databases/$(database)/documents/boardUsers/$(request.auth.token.email)); }
+    function hasActiveProfile() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/userProfiles/$(request.auth.uid))
+        && profile().data.active == true;
     }
-
-    function boardProfile() {
-      return get(/databases/$(database)/documents/boardUsers/$(request.auth.token.email));
+    function isResident() {
+      return hasActiveProfile() && profile().data.role in ['resident', 'board', 'administrator'];
     }
-
+    function isLegacyBoard() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/boardUsers/$(request.auth.token.email))
+        && legacyBoardProfile().data.active == true;
+    }
     function isBoardMember() {
-      return signedIn() && boardProfile().data.active == true;
+      return (hasActiveProfile() && profile().data.role in ['board', 'administrator']) || isLegacyBoard();
     }
-
     function isAdmin() {
-      return isBoardMember() && boardProfile().data.role in ['President', 'Administrator'];
+      return (hasActiveProfile() && profile().data.role == 'administrator')
+        || (isLegacyBoard() && legacyBoardProfile().data.siteRole == 'Administrator');
     }
 
-    match /publicAnnouncements/{id} {
-      allow read: if resource.data.published == true || isBoardMember();
-      allow write: if isBoardMember();
+    match /userProfiles/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isBoardMember());
+      allow create, update, delete: if false;
     }
 
-    match /publicDocuments/{id} {
-      allow read: if isBoardMember();
-      allow write: if isBoardMember();
-    }
-
-    match /calendarEvents/{id} {
-      allow read: if resource.data.public == true || isBoardMember();
-      allow write: if isBoardMember();
-    }
-
-    match /galleryItems/{id} {
-      allow read: if resource.data.public == true || isBoardMember();
-      allow write: if isBoardMember();
-    }
-
-    match /residentSubmissions/{id} {
-      allow create: if true;
-      allow read, update: if isBoardMember();
-      allow delete: if isAdmin();
-    }
-
-    match /boardDocuments/{id} {
-      allow read, write: if isBoardMember();
-    }
-
-    match /boardUsers/{email} {
-      allow read: if isBoardMember();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /auditLogs/{id} {
-      allow create: if isBoardMember();
-      allow read: if isAdmin();
+    match /accessRequests/{uid} {
+      allow create: if emailVerified()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'pending';
+      allow read: if signedIn() && (request.auth.uid == uid || isBoardMember());
       allow update, delete: if false;
+    }
+
+    match /announcements/{id} {
+      allow read: if isBoardMember() || (isResident() && resource.data.published == true);
+      allow write: if isBoardMember();
+    }
+
+    match /associationDocuments/{id} {
+      allow read: if isBoardMember()
+        || (isResident() && resource.data.visibility == 'resident' && resource.data.active == true);
+      allow create, update: if isBoardMember();
+      allow delete: if false;
+    }
+
+    match /proposals/{id} {
+      allow create: if isResident()
+        && request.resource.data.submittedByUid == request.auth.uid
+        && request.resource.data.status == 'submitted';
+      allow read: if isBoardMember()
+        || (isResident() && resource.data.submittedByUid == request.auth.uid);
+      allow update, delete: if false;
+    }
+
+    match /votes/{voteId} {
+      allow read: if isBoardMember();
+      allow write: if false;
+      match /ballots/{uid} { allow read: if isBoardMember(); allow write: if false; }
+      match /history/{historyId} { allow read: if isBoardMember(); allow write: if false; }
+    }
+
+    match /communications/{id} { allow read: if isBoardMember(); allow write: if false; }
+    match /siteSettings/{id} { allow read: if isBoardMember(); allow write: if false; }
+    match /auditLogs/{id} { allow read: if isBoardMember(); allow write: if false; }
+
+    // Existing content remains available only after approval during migration.
+    match /publicAnnouncements/{id} {
+      allow read: if isBoardMember() || (isResident() && resource.data.published == true);
+      allow write: if isBoardMember();
+    }
+    match /calendarEvents/{id} {
+      allow read: if isBoardMember() || (isResident() && resource.data.public == true);
+      allow write: if isBoardMember();
+    }
+    match /galleryItems/{id} {
+      allow read: if isBoardMember() || (isResident() && resource.data.public == true);
+      allow write: if isBoardMember();
+    }
+    match /residentSubmissions/{id} {
+      allow create: if isResident();
+      allow read: if isBoardMember() || (isResident() && resource.data.submittedByUid == request.auth.uid);
+      allow update, delete: if false;
+    }
+    match /boardDocuments/{id} { allow read, write: if isBoardMember(); }
+    match /boardUsers/{email} {
+      allow read: if signedIn() && (request.auth.token.email == email || isBoardMember());
+      allow write: if false;
     }
   }
 }

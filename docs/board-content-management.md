@@ -1,44 +1,18 @@
 # Board Content Management
 
-The board portal supports no-cost content management through Firestore.
+Use `https://hickorycreekbrandon.com/sign-in/` and then work in the private portal.
 
-## What Board Members Can Edit Online
+Board members can:
 
-After signing in at `/board-portal`, approved board members can:
+- Post announcements for approved residents.
+- Add private community calendar events and gallery photos.
+- Review resident account requests and submissions.
+- Upload, replace, classify, and archive protected documents.
+- Initiate and cast board votes.
+- Send and review official correspondence after mail activation.
 
-- Review resident submissions and change statuses.
-- Create, edit, and publish announcements.
-- Add and edit calendar events.
-- Add gallery listings.
-- Access restricted board documents through the board-only Google Drive link.
-- Save board-only document links in the Private Board Documents area.
+Administrators can additionally manage account roles and confirm the governing voting rule.
 
-## Document Restriction Policy
+The old `/board-portal`, public announcement, calendar, gallery, document, and request routes redirect to sign-in or the new portal. Existing Firestore content remains in place and is read inside the authenticated portal during migration.
 
-Documents should not be stored in `public/documents`.
-
-GitHub Pages cannot password-protect files in the public website folder. If a
-document is committed under `public/documents`, it can be accessed by direct URL.
-
-Use the restricted Google Drive folder for association documents. Share files
-with specific approved board member emails, then save the restricted link in the
-Board Portal if a board-only listing is needed.
-
-## Publishing Announcements
-
-1. Sign in to `/board-portal`.
-2. Complete the announcement form.
-3. Check `Publish to the public announcements page`.
-4. Click `Save announcement`.
-
-Published announcements appear on `/announcements`.
-
-## Calendar Events
-
-Use the calendar form in the board portal. Events marked `Show publicly` appear on
-`/calendar` and on the home page Upcoming Meetings panel.
-
-## Gallery Listings
-
-Use the gallery form in the board portal. The image path must point to an image
-already available in the website project.
+See `secure-portal-administration.md` for step-by-step operating instructions.
